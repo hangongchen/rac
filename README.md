@@ -94,3 +94,23 @@ https://github.com/gengshan-y/rac/assets/13134872/6a33919d-e505-49ea-9d26-f03518
 
 https://github.com/gengshan-y/rac/assets/13134872/d177f3cb-f12c-4dfa-837e-95421636ce71
 
+### Export URDF joint angles
+Use a pretrained model with `--pre_skel` (e.g., `wolf_mod`) and export the per-frame joint angles:
+```
+python scripts/export_joint_angles.py \
+  --flagfile logdir/cat76/opts.log \
+  --seqname cat76 \
+  --model_path logdir/cat76/params_latest.pth \
+  --test_frames "{0}"
+```
+This writes `angles.npy`, `angles.csv`, `joint_names.txt`, and `frame_ids.npy` to the model logdir. By default it clamps angles to the URDF joint limits.
+
+To export only the rest pose angles (single pose, no per-frame output):
+```
+python scripts/export_joint_angles.py \
+  --flagfile logdir/cat76/opts.log \
+  --seqname cat76 \
+  --model_path logdir/cat76/params_latest.pth \
+  --rest_only
+```
+This writes `rest_angles.npy`, `rest_angles.csv`, and `joint_names.txt`.
