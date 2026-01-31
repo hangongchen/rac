@@ -29,7 +29,15 @@ mamba env create -f misc/rac-env.yml -y
 
 # other dependencies
 conda activate rac
+pip install -r misc/rac-requirements.txt
 pip install git+https://github.com/pytorch/functorch.git@a6e0e61
+export CC="$CONDA_PREFIX/bin/x86_64-conda-linux-gnu-gcc"
+export CXX="$CONDA_PREFIX/bin/x86_64-conda-linux-gnu-g++"
+export CUDAHOSTCXX="$CXX"
+export CUDA_HOME="$CONDA_PREFIX"
+# set this to your GPU capability; RTX 30xx is 8.6, RTX 40xx is 8.9
+export TORCH_CUDA_ARCH_LIST=8.9
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib/python3.9/site-packages/torch/lib:$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"
 pip install git+https://github.com/facebookresearch/pytorch3d.git
 cd quaternion; python setup.py install; cd -
 
@@ -85,6 +93,4 @@ https://github.com/gengshan-y/rac/assets/13134872/6c8b941f-1dc4-438f-987a-6ac5f3
 https://github.com/gengshan-y/rac/assets/13134872/6a33919d-e505-49ea-9d26-f03518604244
 
 https://github.com/gengshan-y/rac/assets/13134872/d177f3cb-f12c-4dfa-837e-95421636ce71
-
-
 

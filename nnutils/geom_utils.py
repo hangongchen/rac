@@ -2141,12 +2141,25 @@ def extract_mesh(model,chunk,grid_size,
     opts = model.opts
     device=model.near_far.device
     mesh_dict = {}
-    #if model.near_far is not None: 
-    if vidid is not None and 'obj_bounds' in model.latest_vars.keys():
-        bound = model.latest_vars['obj_bounds'][int(vidid)]
+    #if model.near_far is not None:
+    bound = None
+    if hasattr(model, "latest_vars"):
+        latest_vars = model.latest_vars
+        if isinstance(latest_vars, dict):
+            if vidid is not None and 'obj_bounds' in latest_vars:
+                bound = latest_vars['obj_bounds'][int(vidid)]
+            elif 'obj_bound' in latest_vars:
+                bound = latest_vars['obj_bound']
+    if bound is None and hasattr(model, "obj_bound"):
+        bound = model.obj_bound
+    if bound is None:
+        bound = 1.5
+    if isinstance(bound, torch.Tensor):
+        bound = bound.detach().cpu().numpy()
+    if np.isscalar(bound) or np.asarray(bound).shape == ():
+        bound = np.asarray([bound, bound, bound], dtype=np.float32)
     else:
-        bound = model.latest_vars['obj_bound']
-    #else: bound=1.5*np.asarray([1,1,1])
+        bound = np.asarray(bound, dtype=np.float32).reshape(-1)[:3]
 
     if mesh_dict_in is None:
         ptx = np.linspace(-bound[0], bound[0], grid_size).astype(np.float32)
@@ -2192,7 +2205,12 @@ def extract_mesh(model,chunk,grid_size,
 
         if not opts.full_mesh:
             #TODO set density of non-observable points to small value
-            if model.latest_vars['idk'].sum()>0:
+            use_idk = (
+                hasattr(model, "latest_vars")
+                and isinstance(model.latest_vars, dict)
+                and "idk" in model.latest_vars
+            )
+            if use_idk and model.latest_vars["idk"].sum() > 0:
                 vis_chunks = []
                 for i in range(0, bs_pts, chunk):
                     query_xyz_chunk = query_xyz[i:i+chunk]

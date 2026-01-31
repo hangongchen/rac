@@ -762,11 +762,13 @@ class v2s_trainer():
                     if opts.pre_skel!="":
                         joint_path = '%s/joint_rest-%02d.obj'%(self.save_dir,suffix_id)
                         rob_path = '%s/rob-rest-%02d.jpg'%(self.save_dir,suffix_id)
+                        #talk 3: Trigger robot_rest export by articulating the URDF at predicted rest angles
                         joint_rest, angle_rest, robot_rendered, rest_robot_mesh,_ = \
                                 visualize_joints(self.model, robot_save_path = rob_path)
                         save_bones(joint_rest[0].cpu().numpy(), 0.1, joint_path,
                                 parent=self.model.robot.urdf.parent_idx)
                         self.model.latest_vars['rest_robot_mesh'] = rest_robot_mesh
+                        #talk 10: Persist robot_rest as OBJ for inspection/visualization
                         robot_mesh_path = '%s/robot_rest-%02d.obj'%(self.save_dir,suffix_id)
                         rest_robot_mesh.export(robot_mesh_path)
                         aux_seq['sim3'] = self.model.robot.sim3.detach().cpu().numpy()
@@ -1921,4 +1923,3 @@ class v2s_trainer():
             if p.grad is not None:
                 p.grad.detach_()
                 p.grad.zero_()
-

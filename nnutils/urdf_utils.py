@@ -169,9 +169,11 @@ def angle_to_rts(robot, joints, angles, sim3):
     bs = angles.shape[0]
 
     # current estimate
+    #talk 5: Map the network-predicted joint angles into the URDF joint config
     joint_cfg = {}
     for idx, angle_name in enumerate(robot.angle_names):
         joint_cfg[angle_name] = angles[:,idx]
+    #talk 6: Run URDF FK to get per-link transforms in the robot kinematic tree
     fk = link_fk(robot, joints, joint_cfg, sim3)
     #fk0 = link_fk_v0(robot, joints, joint_cfg, sim3)
     #print((fk-fk0).abs().mean())
@@ -285,6 +287,7 @@ def visualize_joints(model, query_time=None, robot_save_path="tmp/robot.jpg"):
     query_time: a scalar value
     This function is only used at eval mode
     """
+    #talk 4: Query the learned kinematic head to get absolute joint transforms + angles
     with torch.no_grad():
         joints,angles = model.nerf_body_rts.forward_abs(x=query_time)
     joints = joints.view(1,-1,12)
@@ -296,15 +299,18 @@ def visualize_joints(model, query_time=None, robot_save_path="tmp/robot.jpg"):
     joints = torch.cat([rmat, tmat],-1)
     joints = se3exp_to_vec(joints[0])[None]
 
+    #talk 7: Convert angles into a URDF config dict (joint_name -> angle)
     cfg = angles2cfg(model.robot.urdf, angles)
 
     # save to robot renderings
     #robot_rendered,robot_mesh = render_robot(model.robot.urdf,
     #        robot_save_path,cfg=cfg, use_collision=False)
     robot_rendered  = np.zeros((256,256,3))
+    #talk 8: Articulate the URDF mesh at the predicted angles to get robot_rest mesh
     robot_mesh = articulate_robot(model.robot.urdf, cfg=cfg, use_collision=False)
 
     # transform to canonical space
+    #talk 9: Apply the learned global Sim(3) to put the robot in the canonical space
     sim3 = model.nerf_body_rts.sim3
     if query_time is not None:
         vid, _ = fid_reindex(query_time, model.num_vid, model.data_offset)

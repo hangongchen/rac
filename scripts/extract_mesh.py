@@ -29,13 +29,17 @@ def save_output(rendered_seq, aux_seq, save_flo):
     length = len(aux_seq['mesh'])
     mesh_rest = aux_seq['mesh_rest']
     len_max = 0.1 # (mesh_rest.vertices.max(0) - mesh_rest.vertices.min(0)).max()
-    if opts.bgmlp=='nerf' or opts.bgmlp=='hmnerf':
-        vidid = int(opts.test_frames[1:-1])
+    vidid = None
+    if opts.test_frames.startswith('{') and opts.test_frames.endswith('}'):
+        try:
+            vidid = int(opts.test_frames[1:-1])
+        except ValueError:
+            vidid = None
+    if (opts.bgmlp=='nerf' or opts.bgmlp=='hmnerf') and vidid is not None:
         #aux_seq['mesh_bg'].export('%s/mesh-bg-%03d.obj'%(save_dir, vidid)) shiba-haru-1012-bgmesh.obj
         seqname = aux_seq['impath'][0].split('/')[-2]
         aux_seq['mesh_bg'].export('%s/%s-bgmesh.obj'%(save_dir, seqname))
-    if opts.use_category:
-        vidid = int(opts.test_frames[1:-1])
+    if opts.use_category and vidid is not None:
         mesh_rest.export('%s/mesh-rest-%03d.obj'%(save_dir,vidid))
         if 'mesh_rest_skin' in aux_seq.keys():
             np.save('%s/val-rest-skin-%03d.npy'%(save_dir,vidid), aux_seq['val_rest_skin'])
@@ -152,6 +156,7 @@ def transform_shape(mesh,rtk):
     return mesh, rtk
 
 def main(_):
+    #talk 1: Entry point — create the evaluation trainer and load data/model
     trainer = v2s_trainer(opts, is_eval=True)
     data_info = trainer.init_dataset()
     trainer.define_model(data_info)
@@ -163,6 +168,7 @@ def main(_):
     trainer.model.img_size = opts.render_size
     chunk = opts.frame_chunk
     for i in range(0, len(idx_render), chunk):
+        #talk 2: Run eval to generate meshes/aux data (robot_rest is exported inside eval)
         rendered_seq, aux_seq = trainer.eval(idx_render=idx_render[i:i+chunk],
                                              dynamic_mesh=dynamic_mesh)
         rendered_seq = tensor2array(rendered_seq)
