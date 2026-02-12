@@ -531,10 +531,12 @@ class SkelHead(BaseMLP):
         jlen_scale = jlen_scale.clone()
         if urdf.robot_name=='a1' or urdf.robot_name=='laikago':
             symm_idx = [3,4,5,0,1,2,9,10,11,6,7,8]
-        elif urdf.robot_name=='wolf' or urdf.robot_name=='wolf_mod':
+        elif urdf.robot_name=='wolf' or urdf.robot_name=='wolf_mod' or urdf.robot_name=='wolf_mod_revised':
             symm_idx = [0,1,2,3, 8,9,10,11,4,5,6,7, 12,13,14,15,16, 21,22,23,24,17,18,19,20]
         elif urdf.robot_name=='human' or urdf.robot_name=='human_mod':
             symm_idx = [0,1,2,3, 8,9,10,11,4,5,6,7, 15,16,17,12,13,14]
+        else:
+            symm_idx = list(range(jlen_scale.shape[1]))
         jlen_scale = (jlen_scale + jlen_scale[:,symm_idx]) / 2
         joints = joints[None] * jlen_scale.exp()[...,None] # 1,N,3 x bs,N,1
 

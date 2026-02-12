@@ -14,7 +14,7 @@ class URDFRobot(nn.Module):
         robot_name = urdf_path.split('/')[-1][:-5]
         self.urdf.robot_name = robot_name
         if robot_name=='wolf' or robot_name=='human' or robot_name=='human_amp'\
-            or robot_name=='wolf_mod' or robot_name=='human_mod':
+            or robot_name=='wolf_mod' or robot_name=='wolf_mod_revised' or robot_name=='human_mod':
             self.urdf.ball_joint = True # whether has sperical joints
         else: self.urdf.ball_joint = False
         joints = get_joints(self.urdf) # joints: joint location, for training
@@ -60,7 +60,7 @@ class URDFRobot(nn.Module):
             rest_angles = torch.zeros(1,self.num_dofs) # ball joints
             self.urdf.kp_links = ['link_155_Vorderpfote_R_Y', 'link_150_Vorderpfote_L_Y', 
                              'link_170_Pfote2_R_Y', 'link_165_Pfote2_L_Y']
-        elif robot_name=='wolf_mod':
+        elif robot_name=='wolf_mod' or robot_name=='wolf_mod_revised':
             sim3 = torch.Tensor([0,0.01,-0.04, \
                                 0.5,0.6,0,0, \
                                 -3.1,-3.1,-3.1]) # center, orient, scale

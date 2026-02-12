@@ -101,7 +101,8 @@ python scripts/export_joint_angles.py \
   --flagfile logdir/cat76/opts.log \
   --seqname cat76 \
   --model_path logdir/cat76/params_latest.pth \
-  --test_frames "{0}"
+  --test_frames "{0}" \
+  --pre_skel wolf_mod
 ```
 This writes `angles.npy`, `angles.csv`, `joint_names.txt`, and `frame_ids.npy` to the model logdir. By default it clamps angles to the URDF joint limits.
 
@@ -111,6 +112,19 @@ python scripts/export_joint_angles.py \
   --flagfile logdir/cat76/opts.log \
   --seqname cat76 \
   --model_path logdir/cat76/params_latest.pth \
-  --rest_only
+  --rest_only \
+  --pre_skel wolf_mod
 ```
 This writes `rest_angles.npy`, `rest_angles.csv`, and `joint_names.txt`.
+
+### Export robot_rest OBJ (URDF articulated mesh)
+```
+python scripts/extract_mesh.py \
+  --flagfile logdir/cat76/opts.log \
+  --seqname cat76 \
+  --model_path logdir/cat76/params_latest.pth \
+  --test_frames 1 \
+  --nolineload \
+  --pre_skel wolf_mod_revised
+```
+This writes `robot_rest-999.obj` to `logdir/cat76/`.

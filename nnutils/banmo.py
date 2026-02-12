@@ -358,18 +358,25 @@ class banmo(nn.Module):
         if opts.lbs:
             # pre-defined skeleton
             if opts.pre_skel!="":
-                if opts.pre_skel=="a1":
+                # allow direct URDF path or custom name
+                if opts.pre_skel.endswith(".urdf") or "/" in opts.pre_skel:
+                    urdf_path = opts.pre_skel
+                elif opts.pre_skel=="a1":
                     urdf_path='mesh_material/a1/urdf/a1.urdf'
                 elif opts.pre_skel=="wolf":
                     urdf_path='mesh_material/wolf.urdf'
                 elif opts.pre_skel=="wolf_mod":
                     urdf_path='mesh_material/wolf_mod.urdf'
+                elif opts.pre_skel=="wolf_mod_revised":
+                    urdf_path='mesh_material/wolf_mod_revised.urdf'
                 elif opts.pre_skel=="laikago":
                     urdf_path='mesh_material/laikago/laikago.urdf'
                 elif opts.pre_skel=="human":
                     urdf_path='mesh_material/human.urdf' 
                 elif opts.pre_skel=="human_mod":
                     urdf_path='mesh_material/human_mod.urdf'
+                else:
+                    raise ValueError(f"Unknown pre_skel '{opts.pre_skel}'. Provide a URDF path or a supported name.")
                 robot = URDFRobot(urdf_path=urdf_path)
                 self.sim3 = nn.Parameter(robot.sim3) # used in two places for grad (1) sinkhorn (2) fk
                 opts.num_bones = robot.num_bones
@@ -1934,4 +1941,3 @@ class banmo(nn.Module):
             self.embedding_dir.alpha = self.alpha.data[0]
 
         return bs
-
